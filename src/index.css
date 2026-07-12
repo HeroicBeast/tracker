@@ -1,0 +1,61 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+/*
+  Design system — dark only, deliberately not "inverted light mode":
+  - base/surface/line give three layers of depth on a cold near-black
+  - ink/ink-soft/ink-faint are the text ramp
+  - accent (violet) is UI chrome only — buttons, links, active nav, focus
+  - safe/borderline/below/neutral are reserved for attendance status ONLY,
+    never reused for branding, so status always reads unambiguously
+  - `font-data` (JetBrains Mono) is used specifically for numbers —
+    percentages, counts, timestamps — so figures read as instrument data
+    distinct from the sans-serif UI labels around them
+*/
+@theme {
+  --color-base: #0a0e1a;
+  --color-surface: #12172a;
+  --color-surface-hover: #1a2140;
+  --color-line: #232b45;
+
+  --color-ink: #f1f5f9;
+  --color-ink-soft: #93a0bd;
+  --color-ink-faint: #5b6789;
+
+  --color-accent: #7c86f5;
+  --color-accent-solid: #6b74e8;
+
+  --color-safe: #34d399;
+  --color-borderline: #fbbf24;
+  --color-below: #f87171;
+  --color-neutral: #5b6789;
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-data: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-base);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+input[type='date'],
+input[type='time'] {
+  color-scheme: dark;
+}
+
+::selection {
+  background-color: color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
