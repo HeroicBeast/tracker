@@ -41,7 +41,7 @@ export function DashboardPage({ onSelectSubject }: { onSelectSubject: (id: numbe
             const subjectRecords = records.filter((r) => r.subjectId === s.id);
             const present = subjectRecords.filter((r) => r.status === 'present').length;
             const absent = subjectRecords.length - present;
-            const stats = computeAttendanceStats(present, absent);
+            const stats = computeAttendanceStats(present, absent, s.credits);
             return <SubjectCard key={s.id} subject={s} stats={stats} onClick={() => onSelectSubject(s.id!)} />;
           })}
         </div>

@@ -1,3 +1,5 @@
+import type { Credits } from '../db/types';
+
 export type SubjectStatus = 'safe' | 'borderline' | 'below' | 'no-data';
 
 export interface AttendanceStats {
@@ -6,7 +8,7 @@ export interface AttendanceStats {
   absent: number;
   /** 0–100. */
   percentage: number;
-  /** floor(0.20 × totalClasses) — the leave budget implied by classes held so far. */
+  /** The fixed leave cap implied by the subject's credit value. */
   maxLeavesAllowed: number;
   /** maxLeavesAllowed − absent. Can go negative once you're already below 80%. */
   leavesRemaining: number;
@@ -22,8 +24,9 @@ const THRESHOLD = 80;
 // without pinning an exact band, so this is the assumption in play.
 const BORDERLINE_BAND = 5;
 
-export function computeAttendanceStats(present: number, absent: number): AttendanceStats {
+export function computeAttendanceStats(present: number, absent: number, credits: Credits): AttendanceStats {
   const totalClasses = present + absent;
+  const fixedLeaveCap = Math.floor(targetClassesForCredits(credits) / 5);
 
   if (totalClasses === 0) {
     return {
@@ -31,8 +34,8 @@ export function computeAttendanceStats(present: number, absent: number): Attenda
       present: 0,
       absent: 0,
       percentage: 0,
-      maxLeavesAllowed: 0,
-      leavesRemaining: 0,
+      maxLeavesAllowed: fixedLeaveCap,
+      leavesRemaining: fixedLeaveCap,
       safeToBunk: 0,
       classesNeededToRecover: 0,
       status: 'no-data',
@@ -40,12 +43,13 @@ export function computeAttendanceStats(present: number, absent: number): Attenda
   }
 
   const percentage = (present / totalClasses) * 100;
-  const maxLeavesAllowed = Math.floor(totalClasses / 5); // floor(0.20 * totalClasses)
+  const maxLeavesAllowed = fixedLeaveCap;
   const leavesRemaining = maxLeavesAllowed - absent;
 
   // Max N such that present / (totalClasses + N) >= 0.8, all N future classes missed.
   // present/(T+N) >= 0.8  =>  N <= 1.25*present - T  =>  N <= (5*present - 4*T) / 4
-  const safeToBunk = Math.max(0, Math.floor((5 * present - 4 * totalClasses) / 4));
+  const liveSafeToBunk = Math.max(0, Math.floor((5 * present - 4 * totalClasses) / 4));
+  const safeToBunk = Math.max(0, Math.min(liveSafeToBunk, fixedLeaveCap - absent));
 
   // Min N such that (present + N) / (totalClasses + N) >= 0.8, all N future classes attended.
   // present+N >= 0.8*(T+N)  =>  N >= 4*totalClasses - 5*present

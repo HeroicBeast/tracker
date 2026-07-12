@@ -36,7 +36,7 @@ export function SubjectDetailPage({ subjectId, onBack }: { subjectId: number; on
 
   const present = records.filter((r) => r.status === 'present').length;
   const absent = records.length - present;
-  const stats = computeAttendanceStats(present, absent);
+  const stats = computeAttendanceStats(present, absent, subject.credits);
 
   const safeLine =
     stats.status === 'no-data'
