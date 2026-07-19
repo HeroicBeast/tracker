@@ -19,6 +19,8 @@ export interface AttendanceRecord {
   status: AttendanceStatus;
   /** ISO date 'YYYY-MM-DD', or null for an undated bulk entry (count only, no class date). */
   classDate: string | null;
+  /** Optional timetable slot id for Today-tab quick marks that originated from a specific slot. */
+  timetableSlotId?: number;
   /** Epoch ms — when this record was created/added, independent of classDate. */
   addedAt: number;
   source: AttendanceSource;

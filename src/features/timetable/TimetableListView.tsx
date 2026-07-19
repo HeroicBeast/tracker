@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import type { Subject, TimetableSlot } from '../../db/types';
-import { DAY_NAMES, formatTime12h } from '../../lib/date';
+import { DAY_NAMES_ORDERED_6, DAY_VALUES_ORDERED_6, formatTime12h } from '../../lib/date';
 
 interface Props {
   slots: TimetableSlot[];
@@ -12,14 +12,15 @@ interface Props {
 export function TimetableListView({ slots, subjects, onSlotClick, onAddForDay }: Props) {
   return (
     <div className="md:hidden space-y-4">
-      {DAY_NAMES.map((day, i) => {
-        const daySlots = slots.filter((s) => s.dayOfWeek === i).sort((a, b) => a.startTime.localeCompare(b.startTime));
+      {DAY_NAMES_ORDERED_6.map((day, index) => {
+        const dayValue = DAY_VALUES_ORDERED_6[index];
+        const daySlots = slots.filter((s) => s.dayOfWeek === dayValue).sort((a, b) => a.startTime.localeCompare(b.startTime));
         return (
-          <div key={i}>
+          <div key={dayValue}>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-semibold text-ink-soft">{day}</h3>
               <button
-                onClick={() => onAddForDay(i)}
+                onClick={() => onAddForDay(dayValue)}
                 aria-label={`Add slot on ${day}`}
                 className="h-10 w-10 flex items-center justify-center rounded-full text-ink-faint hover:bg-surface-hover hover:text-accent"
               >

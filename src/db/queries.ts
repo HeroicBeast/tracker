@@ -9,7 +9,7 @@ import type {
   Credits,
   AttendanceStatus,
 } from './types';
-import { DAY_NAMES, formatTime12h } from '../lib/date';
+import { DAY_NAMES, formatDateIndian, formatTime12h } from '../lib/date';
 
 async function logAudit(
   action: AuditAction,
@@ -68,10 +68,11 @@ export async function addAttendanceRecord(
   subject: Subject,
   status: AttendanceStatus,
   classDate: string | null,
-  source: AttendanceRecord['source']
+  source: AttendanceRecord['source'],
+  timetableSlotId?: number
 ) {
-  await db.attendance.add({ subjectId: subject.id!, status, classDate, addedAt: Date.now(), source });
-  const dateLabel = classDate ?? 'undated entry';
+  await db.attendance.add({ subjectId: subject.id!, status, classDate, timetableSlotId, addedAt: Date.now(), source });
+  const dateLabel = classDate ? formatDateIndian(classDate) : 'undated entry';
   await logAudit('add', 'attendance', subject.name, `Marked ${status} for "${subject.name}" — ${dateLabel}`);
 }
 
@@ -96,13 +97,13 @@ export async function addBulkAttendance(
 }
 
 function describeRecord(record: Pick<AttendanceRecord, 'status' | 'classDate'>): string {
-  return `${record.status}${record.classDate ? ` on ${record.classDate}` : ' (undated)'}`;
+  return `${record.status}${record.classDate ? ` on ${formatDateIndian(record.classDate)}` : ' (undated)'}`;
 }
 
 export async function updateAttendanceRecord(
   record: AttendanceRecord,
   subjectName: string,
-  changes: Partial<Pick<AttendanceRecord, 'status' | 'classDate'>>
+  changes: Partial<Pick<AttendanceRecord, 'status' | 'classDate' | 'timetableSlotId'>>
 ) {
   const oldValue = describeRecord(record);
   const updated = { ...record, ...changes };
@@ -195,5 +196,5 @@ export async function importAllData(payload: BackupPayload) {
     await db.timetable.bulkAdd(payload.timetable);
     await db.auditLog.bulkAdd(payload.auditLog);
   });
-  await logAudit('add', 'backup', 'All data', `Restored all data from a backup file (exported ${payload.exportedAt})`);
+  await logAudit('add', 'backup', 'All data', `Restored all data from a backup file (exported ${formatDateIndian(payload.exportedAt)})`);
 }

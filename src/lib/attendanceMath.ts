@@ -10,9 +10,9 @@ export interface AttendanceStats {
   percentage: number;
   /** The fixed leave cap implied by the subject's credit value. */
   maxLeavesAllowed: number;
-  /** maxLeavesAllowed − absent. Can go negative once you're already below 80%. */
+  /** maxLeavesAllowed − absent. */
   leavesRemaining: number;
-  /** How many more classes you can miss in a row and stay ≥ 80%, assuming the total keeps growing. */
+  /** Legacy projection value; currently unused in the UI. */
   safeToBunk: number;
   /** Only meaningful when below 80% — classes you'd need to attend in a row to get back to exactly 80%. */
   classesNeededToRecover: number;
@@ -45,11 +45,7 @@ export function computeAttendanceStats(present: number, absent: number, credits:
   const percentage = (present / totalClasses) * 100;
   const maxLeavesAllowed = fixedLeaveCap;
   const leavesRemaining = maxLeavesAllowed - absent;
-
-  // Max N such that present / (totalClasses + N) >= 0.8, all N future classes missed.
-  // present/(T+N) >= 0.8  =>  N <= 1.25*present - T  =>  N <= (5*present - 4*T) / 4
-  const liveSafeToBunk = Math.max(0, Math.floor((5 * present - 4 * totalClasses) / 4));
-  const safeToBunk = Math.max(0, Math.min(liveSafeToBunk, fixedLeaveCap - absent));
+  const safeToBunk = Math.max(0, leavesRemaining);
 
   // Min N such that (present + N) / (totalClasses + N) >= 0.8, all N future classes attended.
   // present+N >= 0.8*(T+N)  =>  N >= 4*totalClasses - 5*present

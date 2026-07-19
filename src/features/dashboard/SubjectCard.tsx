@@ -17,11 +17,18 @@ export function SubjectCard({
   const safeLine =
     stats.status === 'no-data'
       ? 'No classes recorded yet'
-      : stats.safeToBunk > 0
-      ? `Can miss ${stats.safeToBunk} more`
-      : stats.percentage >= 80
-      ? 'No margin left'
-      : `Attend next ${stats.classesNeededToRecover} to recover`;
+      : stats.percentage < 80
+      ? `Attend next ${stats.classesNeededToRecover} to recover`
+      : stats.leavesRemaining <= 0
+      ? '0 leaves left'
+      : `Can miss ${stats.leavesRemaining} more`;
+
+  const safeLineClass =
+    stats.status === 'no-data'
+      ? 'text-ink-faint'
+      : stats.percentage >= 80 && stats.leavesRemaining <= 0
+      ? 'text-below font-semibold'
+      : 'text-ink-faint';
 
   return (
     <Card onClick={onClick} className="hover:border-accent/40 transition-colors">
@@ -44,7 +51,7 @@ export function SubjectCard({
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-line">
         <StatusBadge status={stats.status} />
-        <p className="font-data text-xs text-ink-faint">{safeLine}</p>
+        <p className={`font-data text-xs ${safeLineClass}`}>{safeLine}</p>
       </div>
     </Card>
   );

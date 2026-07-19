@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import type { Subject, TimetableSlot } from '../../db/types';
-import { DAY_NAMES_SHORT, timeToMinutes, formatTime12h } from '../../lib/date';
+import { DAY_NAMES_SHORT, DAY_VALUES_ORDERED_6, timeToMinutes, formatTime12h } from '../../lib/date';
 
 interface Props {
   slots: TimetableSlot[];
@@ -25,15 +25,15 @@ export function TimetableGridView({ slots, subjects, startHour, endHour, onSlotC
 
   return (
     <div className="hidden md:block rounded-2xl border border-line overflow-hidden">
-      <div className="grid grid-cols-[64px_repeat(7,1fr)]">
+      <div className="grid grid-cols-[64px_repeat(6,1fr)]">
         <div className="bg-surface border-b border-line" />
-        {DAY_NAMES_SHORT.map((d) => (
+        {DAY_NAMES_SHORT.slice(1, 7).map((d) => (
           <div key={d} className="bg-surface border-b border-l border-line py-2 text-center text-xs font-medium text-ink-soft">
             {d}
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-[64px_repeat(7,1fr)]" style={{ height: totalMinutes }}>
+      <div className="grid grid-cols-[64px_repeat(6,1fr)]" style={{ height: totalMinutes }}>
         <div className="relative">
           {hourMarks.map((h) => (
             <div
@@ -45,7 +45,7 @@ export function TimetableGridView({ slots, subjects, startHour, endHour, onSlotC
             </div>
           ))}
         </div>
-        {Array.from({ length: 7 }, (_, day) => (
+        {DAY_VALUES_ORDERED_6.map((day) => (
           <div key={day} className="relative border-l border-line">
             {hourMarks.map((h) => (
               <div key={h} className="absolute left-0 right-0 border-t border-line/60" style={{ top: (h - startHour) * 60 }} />

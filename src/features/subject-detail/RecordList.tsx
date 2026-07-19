@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Check, X as XIcon, Pencil, Trash2 } from 'lucide-react';
 import type { AttendanceRecord } from '../../db/types';
 import { deleteAttendanceRecord, restoreAttendanceRecord } from '../../db/queries';
-import { formatTimestamp } from '../../lib/date';
+import { formatDateIndian, formatTimestamp } from '../../lib/date';
 import { useToast } from '../../context/ToastContext';
 import { EditRecordModal } from './EditRecordModal';
 
@@ -40,7 +40,7 @@ export function RecordList({ records, subjectName }: { records: AttendanceRecord
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-ink capitalize">{r.status}</p>
             <p className="font-data text-xs text-ink-faint">
-              {r.classDate ? r.classDate : `Undated · added ${formatTimestamp(r.addedAt)}`}
+              {r.classDate ? formatDateIndian(r.classDate) : `Undated · added ${formatTimestamp(r.addedAt)}`}
             </p>
           </div>
           <button

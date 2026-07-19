@@ -17,7 +17,8 @@ export function MorePage({ onNavigate }: { onNavigate: (v: View) => void }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `attendance-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    const backupDate = new Date().toISOString().slice(0, 10).split('-').reverse().join('-');
+    a.download = `attendance-backup-${backupDate}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast('Backup file downloaded');

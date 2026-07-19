@@ -3,7 +3,9 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { addBulkAttendance } from '../../db/queries';
 import type { Subject, AttendanceStatus } from '../../db/types';
-import { todayISO, toISODate, DAY_NAMES_SHORT } from '../../lib/date';
+import { todayISO, toISODate, DAY_NAMES_SHORT, DAY_VALUES_ORDERED } from '../../lib/date';
+
+const WEEKDAY_SHORT_LABELS = [...DAY_NAMES_SHORT.slice(1), DAY_NAMES_SHORT[0]];
 import { Button } from '../../components/ui/Button';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { useToast } from '../../context/ToastContext';
@@ -128,17 +130,20 @@ export function BulkAddForm({ lockedSubject, onDone }: { lockedSubject?: Subject
           <div>
             <label className="text-xs text-ink-faint mb-1.5 block">Which weekdays count as class days</label>
             <div className="flex gap-1.5 flex-wrap">
-              {DAY_NAMES_SHORT.map((d, i) => (
-                <button
-                  key={i}
-                  onClick={() => toggleWeekday(i)}
-                  className={`h-10 w-11 rounded-lg text-xs font-medium border transition-colors ${
-                    weekdays.has(i) ? 'bg-accent-solid border-accent-solid text-white' : 'bg-surface-hover border-line text-ink-soft'
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
+              {WEEKDAY_SHORT_LABELS.map((d, i) => {
+                const dayValue = DAY_VALUES_ORDERED[i];
+                return (
+                  <button
+                    key={dayValue}
+                    onClick={() => toggleWeekday(dayValue)}
+                    className={`h-10 w-11 rounded-lg text-xs font-medium border transition-colors ${
+                      weekdays.has(dayValue) ? 'bg-accent-solid border-accent-solid text-white' : 'bg-surface-hover border-line text-ink-soft'
+                    }`}
+                  >
+                    {d}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div>

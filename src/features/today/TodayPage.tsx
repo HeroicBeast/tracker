@@ -37,31 +37,24 @@ export function TodayPage({ onNavigate }: { onNavigate: (v: View) => void }) {
     );
   }
 
-  const bySubject = new Map<number, TimetableSlot[]>();
-  for (const s of slots) {
-    if (!bySubject.has(s.subjectId)) bySubject.set(s.subjectId, []);
-    bySubject.get(s.subjectId)!.push(s);
-  }
+  type CardData = { subject: Subject; slot: TimetableSlot; existing: AttendanceRecord | undefined };
 
-  type CardData = { subject: Subject; slots: TimetableSlot[]; existing: AttendanceRecord | undefined };
-
-  const cards: CardData[] = [...bySubject.entries()]
-    .map(([subjectId, slotList]): CardData | null => {
-      const subject = subjects.find((s) => s.id === subjectId);
+  const cards: CardData[] = slots
+    .map((slot) => {
+      const subject = subjects.find((s) => s.id === slot.subjectId);
       if (!subject) return null;
-      const sorted = [...slotList].sort((a, b) => a.startTime.localeCompare(b.startTime));
-      const existing = todayRecords.find((r) => r.subjectId === subjectId && r.source === 'today');
-      return { subject, slots: sorted, existing };
+      const existing = todayRecords.find((r) => r.subjectId === slot.subjectId && r.timetableSlotId === slot.id && r.source === 'today');
+      return { subject, slot, existing };
     })
     .filter((c): c is CardData => c !== null)
-    .sort((a, b) => a.slots[0].startTime.localeCompare(b.slots[0].startTime));
+    .sort((a, b) => a.slot.startTime.localeCompare(b.slot.startTime));
 
-  async function mark(subject: Subject, status: 'present' | 'absent', existing?: AttendanceRecord) {
+  async function mark(subject: Subject, slot: TimetableSlot, status: 'present' | 'absent', existing?: AttendanceRecord) {
     if (existing) {
       if (existing.status === status) return;
       await updateAttendanceRecord(existing, subject.name, { status });
     } else {
-      await addAttendanceRecord(subject, status, iso, 'today');
+      await addAttendanceRecord(subject, status, iso, 'today', slot.id);
     }
     showToast(`Marked ${status} for ${subject.name}`);
   }
@@ -78,11 +71,11 @@ export function TodayPage({ onNavigate }: { onNavigate: (v: View) => void }) {
         />
       ) : (
         <div className="space-y-3">
-          {cards.map(({ subject, slots: slotList, existing }) => (
-            <Card key={subject.id} className="flex items-center justify-between gap-3">
+          {cards.map(({ subject, slot, existing }) => (
+            <Card key={`${subject.id}-${slot.id}`} className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-medium text-ink truncate">{subject.name}</p>
-                <p className="font-data text-xs text-ink-soft">{slotList.map((s) => formatTime12h(s.startTime)).join(', ')}</p>
+                <p className="font-data text-xs text-ink-soft">{formatTime12h(slot.startTime)}</p>
                 {existing && (
                   <p className={`text-xs mt-0.5 font-medium ${existing.status === 'present' ? 'text-safe' : 'text-below'}`}>
                     Marked {existing.status} — tap the other button to change
@@ -91,7 +84,7 @@ export function TodayPage({ onNavigate }: { onNavigate: (v: View) => void }) {
               </div>
               <div className="flex gap-2 shrink-0">
                 <button
-                  onClick={() => mark(subject, 'present', existing)}
+                  onClick={() => mark(subject, slot, 'present', existing)}
                   aria-label={`Mark ${subject.name} present`}
                   className={`h-11 w-11 rounded-xl border flex items-center justify-center transition-colors ${
                     existing?.status === 'present'
@@ -102,7 +95,7 @@ export function TodayPage({ onNavigate }: { onNavigate: (v: View) => void }) {
                   <Check size={20} />
                 </button>
                 <button
-                  onClick={() => mark(subject, 'absent', existing)}
+                  onClick={() => mark(subject, slot, 'absent', existing)}
                   aria-label={`Mark ${subject.name} absent`}
                   className={`h-11 w-11 rounded-xl border flex items-center justify-center transition-colors ${
                     existing?.status === 'absent'

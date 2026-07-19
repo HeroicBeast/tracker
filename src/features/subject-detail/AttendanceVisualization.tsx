@@ -2,17 +2,16 @@ import { lazy, Suspense, useMemo, useState } from 'react';
 import type { AttendanceRecord } from '../../db/types';
 import { SegmentedControl } from '../../components/ui/SegmentedControl';
 import { Spinner } from '../../components/ui/Spinner';
-import { toISODate } from '../../lib/date';
+import { formatDateIndian, toISODate } from '../../lib/date';
 
 const TrendChart = lazy(() => import('./TrendChart'));
 
-type DayStatus = 'present' | 'absent' | 'mixed';
+type DayStatus = 'present' | 'absent';
 type HeatmapDay = { date: string; status: DayStatus | null };
 
 const CELL_COLOR: Record<DayStatus, string> = {
   present: '#34d399',
   absent: '#f87171',
-  mixed: '#fbbf24',
 };
 const EMPTY_CELL = '#1a2140';
 
@@ -27,10 +26,12 @@ function buildHeatmapWeeks(records: AttendanceRecord[]): HeatmapDay[][] {
   }
 
   const dates = [...byDate.keys()].sort();
-  const first = new Date(dates[0] + 'T00:00:00');
+  const first = new Date(`${dates[0]}T00:00:00`);
   const today = new Date();
   const start = new Date(first);
-  start.setDate(start.getDate() - start.getDay());
+  const day = start.getDay();
+  const mondayDelta = day === 0 ? 6 : day - 1;
+  start.setDate(start.getDate() - mondayDelta);
 
   const days: HeatmapDay[] = [];
   const cursor = new Date(start);
@@ -38,7 +39,7 @@ function buildHeatmapWeeks(records: AttendanceRecord[]): HeatmapDay[][] {
     const iso = toISODate(cursor);
     const set = byDate.get(iso);
     let status: DayStatus | null = null;
-    if (set) status = set.size === 2 ? 'mixed' : set.has('present') ? 'present' : 'absent';
+    if (set) status = set.has('absent') ? 'absent' : 'present';
     days.push({ date: iso, status });
     cursor.setDate(cursor.getDate() + 1);
   }
@@ -91,7 +92,7 @@ export function AttendanceVisualization({ records }: { records: AttendanceRecord
                   {week.map((day) => (
                     <div
                       key={day.date}
-                      title={`${day.date}${day.status ? ` — ${day.status}` : ''}`}
+                      title={`${formatDateIndian(day.date)}${day.status ? ` — ${day.status}` : ''}`}
                       className="h-3 w-3 rounded-sm"
                       style={{ background: day.status ? CELL_COLOR[day.status] : EMPTY_CELL }}
                     />
@@ -105,9 +106,6 @@ export function AttendanceVisualization({ records }: { records: AttendanceRecord
               </span>
               <span className="flex items-center gap-1">
                 <span className="h-2.5 w-2.5 rounded-sm inline-block" style={{ background: CELL_COLOR.absent }} /> Absent
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-sm inline-block" style={{ background: CELL_COLOR.mixed }} /> Mixed
               </span>
             </div>
           </div>

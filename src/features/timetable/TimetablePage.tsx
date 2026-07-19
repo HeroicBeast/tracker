@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Spinner } from '../../components/ui/Spinner';
 import { EmptyState } from '../../components/ui/EmptyState';
 import type { TimetableSlot } from '../../db/types';
-import { timeToMinutes } from '../../lib/date';
+import { timeToMinutes, DAY_VALUES_ORDERED_6 } from '../../lib/date';
 
 function computeRange(slots: TimetableSlot[]) {
   if (slots.length === 0) return { startHour: 8, endHour: 18 };
@@ -44,7 +44,13 @@ export function TimetablePage() {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => setModalSlot({ dayOfWeek: new Date().getDay(), startTime: '09:00' })}>
+        <Button
+          onClick={() => {
+            const today = new Date().getDay();
+            const defaultDay = DAY_VALUES_ORDERED_6.includes(today as (typeof DAY_VALUES_ORDERED_6)[number]) ? today : 1;
+            setModalSlot({ dayOfWeek: defaultDay, startTime: '09:00' });
+          }}
+        >
           <Plus size={18} /> Add slot
         </Button>
       </div>

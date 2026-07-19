@@ -41,11 +41,18 @@ export function SubjectDetailPage({ subjectId, onBack }: { subjectId: number; on
   const safeLine =
     stats.status === 'no-data'
       ? '—'
-      : stats.safeToBunk > 0
-      ? `${stats.safeToBunk} more classes`
-      : stats.percentage >= 80
-      ? '0 — right at the edge'
-      : `Attend next ${stats.classesNeededToRecover} to recover`;
+      : stats.percentage < 80
+      ? `Attend next ${stats.classesNeededToRecover} to recover`
+      : stats.leavesRemaining <= 0
+      ? '0 leaves left'
+      : `Can miss ${stats.leavesRemaining} more`;
+
+  const safeLineClass =
+    stats.status === 'no-data'
+      ? 'text-ink-faint'
+      : stats.percentage >= 80 && stats.leavesRemaining <= 0
+      ? 'text-below font-semibold'
+      : 'text-ink';
 
   async function handleDelete() {
     await deleteSubject(subject!);
@@ -103,7 +110,7 @@ export function SubjectDetailPage({ subjectId, onBack }: { subjectId: number; on
           </div>
           <div>
             <p className="text-xs text-ink-faint mb-0.5">Safe to bunk</p>
-            <p className="font-data text-sm font-medium text-ink">{safeLine}</p>
+            <p className={`font-data text-sm font-medium ${safeLineClass}`}>{safeLine}</p>
           </div>
         </div>
       </Card>

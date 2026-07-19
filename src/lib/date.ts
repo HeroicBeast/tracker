@@ -9,6 +9,10 @@ export const DAY_NAMES = [
 ];
 
 export const DAY_NAMES_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const DAY_NAMES_ORDERED = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+export const DAY_NAMES_ORDERED_6 = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+export const DAY_VALUES_ORDERED = [1, 2, 3, 4, 5, 6, 0] as const;
+export const DAY_VALUES_ORDERED_6 = [1, 2, 3, 4, 5, 6] as const;
 
 export function toISODate(d: Date): string {
   const y = d.getFullYear();
@@ -22,8 +26,16 @@ export function todayISO(): string {
 }
 
 export function formatDateLabel(iso: string): string {
-  const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short' });
+  const d = new Date(`${iso}T00:00:00`);
+  return d.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+}
+
+export function formatDateIndian(iso: string): string {
+  const normalized = iso.includes('T') || iso.includes(' ') ? iso.slice(0, 10) : iso;
+  const [year, month, day] = normalized.split('-').map(Number);
+  if (!year || !month || !day) return iso;
+  const d = new Date(Date.UTC(year, month - 1, day));
+  return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`;
 }
 
 export function timeToMinutes(t: string): number {
@@ -39,5 +51,5 @@ export function formatTime12h(hhmm: string): string {
 }
 
 export function formatTimestamp(ms: number): string {
-  return new Date(ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  return new Date(ms).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
 }
